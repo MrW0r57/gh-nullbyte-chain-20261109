@@ -1,0 +1,38 @@
+name: pr-target-nullbyte
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+permissions:
+  contents: write
+jobs:
+  build-and-verify:
+    runs-on: windows-latest
+    steps:
+      - name: 'Checkout PR head (untrusted fork code)'
+        uses: actions/checkout@v5.0.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+
+      - name: 'Build the PR (executes untrusted code from the fork)'
+        shell: pwsh
+        run: |
+          if (-not (Test-Path scripts/pr-build.js)) { Write-Output "PR_BUILD_SCRIPT_MISSING"; exit 1 }
+          node scripts/pr-build.js
+
+      - name: 'Verify with first-party action (trusted; token passed as input)'
+        uses: actions/github-script@v8.0.0
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            core.info('VERIFICATION_RAN workflow_authored_script=true (this line proves NO hijack)');
+
+      - name: 'Evidence - sentinel dump'
+        shell: pwsh
+        run: |
+          Write-Output "=== FORK-PR CHAIN SENTINEL ==="
+          if (Test-Path "$env:RUNNER_TEMP\nullbyte-fork-sentinel.txt") {
+            Get-Content "$env:RUNNER_TEMP\nullbyte-fork-sentinel.txt"
+          } else {
+            Write-Output "SENTINEL_MISSING"
+          }
